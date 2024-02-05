@@ -101,29 +101,42 @@ function createWallet() {
 function airdrop(amount) {
     if (amount === void 0) { amount = 1; }
     return __awaiter(this, void 0, void 0, function () {
-        var wallet, signature, err_2;
+        var wallet, balance, signature, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _a.trys.push([0, 4, , 5]);
                     if (currentWalletIndex === -1) {
                         console.error("No wallet selected.");
                         return [2 /*return*/];
                     }
                     wallet = wallets[currentWalletIndex];
-                    return [4 /*yield*/, connection.requestAirdrop(wallet.publicKey, amount * web3.LAMPORTS_PER_SOL)];
+                    return [4 /*yield*/, connection.getBalance(wallet.publicKey)];
                 case 1:
+                    balance = _a.sent();
+                    // 1. Ağ Bağlantısı Kontrolü
+                    if (!balance) {
+                        console.error("Failed to connect to the network.");
+                        return [2 /*return*/];
+                    }
+                    // 2. Cüzdanların Bakiyeleri Kontrolü
+                    if (balance < amount * web3.LAMPORTS_PER_SOL) {
+                        console.error("Insufficient balance.");
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, connection.requestAirdrop(wallet.publicKey, amount * web3.LAMPORTS_PER_SOL)];
+                case 2:
                     signature = _a.sent();
                     return [4 /*yield*/, connection.confirmTransaction(signature)];
-                case 2:
+                case 3:
                     _a.sent();
                     console.log("Airdrop of ".concat(amount, " SOL completed to wallet ").concat(currentWalletIndex, "."));
-                    return [3 /*break*/, 4];
-                case 3:
+                    return [3 /*break*/, 5];
+                case 4:
                     err_2 = _a.sent();
                     console.error("Error during airdrop:", err_2);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
             }
         });
     });

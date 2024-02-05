@@ -66,6 +66,23 @@ async function airdrop(amount: number = 1): Promise<void> {
         }
 
         const wallet = wallets[currentWalletIndex];
+        const balance = await connection.getBalance(wallet.publicKey);
+        
+        // 1. Ağ Bağlantısı Kontrolü
+        if (!balance) {
+            console.error("Failed to connect to the network.");
+            return;
+        }
+
+        // 2. Cüzdanların Bakiyeleri Kontrolü
+        if (balance < amount * web3.LAMPORTS_PER_SOL) {
+            console.error("Insufficient balance.");
+            return;
+        }
+
+        // 3. Cüzdanlara Gönderme Yetkisi Kontrolü
+        // Hedef cüzdana SOL gönderebilme yetkisi olmalı.
+
         const signature = await connection.requestAirdrop(wallet.publicKey, amount * web3.LAMPORTS_PER_SOL);
         await connection.confirmTransaction(signature);
         console.log(`Airdrop of ${amount} SOL completed to wallet ${currentWalletIndex}.`);
